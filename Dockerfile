@@ -7,6 +7,10 @@ FROM ubuntu:latest
 
 # If you want to have it in a different directory inside of the container use: "--build-arg LINUX_BUILD_DIR=somedir"
 ARG LINUX_BUILD_DIR=linux_build_environment
+ARG BOOT_FILES_DIR=$LINUX_BUILD_DIR/boot_files
+
+# initial filesystem directory
+ARG INITFS_DIR=$BOOT_FILES_DIR/initramfs
 
 # gcc: compiling
 # make: building
@@ -35,7 +39,7 @@ RUN apt-get update && \
 		bzip2 \ 
 		libncurses-dev
 
-RUN mkdir $LINUX_BUILD_DIR
+RUN mkdir -p $LINUX_BUILD_DIR/boot_files/initramfs 
 
 # Cloning linux repo in the dockerfile because, if you clone it on mac and then use a volume the binaries that come with it wont work inside the container :/.
 # To fix this you could use a cross-compiler aswell.
@@ -45,3 +49,5 @@ RUN git clone --depth 1 https://github.com/torvalds/linux.git $LINUX_BUILD_DIR/l
 RUN git clone --depth 1 https://git.busybox.net/busybox $LINUX_BUILD_DIR/busybox
 
 COPY scripts/Makefile $LINUX_BUILD_DIR
+COPY scripts/init $INITFS_DIR
+RUN chmod +x $INITFS_DIR/init
